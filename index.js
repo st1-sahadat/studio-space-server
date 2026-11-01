@@ -23,12 +23,33 @@ export async function connectToMongoDB() {
 }
 const mongoClient = await connectToMongoDB();
 const db = mongoClient.db("studio-space")
-const studiospaceCollection = db.collection("studio-space-server")
+const studioCollection = db.collection("studio")
 
 app.get("/", (req, res) =>{
     res.send("Server Home Page!")
 })
 
+
+// Studio Data
+app.post('/add-studio', async (req, res) => {
+    const data = req.body; 
+    const result = await studioCollection.insertOne(data);
+    console.log(result);
+    res.send(result);
+})
+app.get('/add-studio', async (req, res) => {
+    const result = await studioCollection.find().toArray();
+    res.send(result)
+})
+
+
+
+
+app.get('/add-studio/:id', async (req, res) => {
+    const { id } = req.params;
+    const result = await studioCollection.findOne({ _id: new ObjectId(id) })
+    res.send(result)
+})
 
 
 app.listen(PORT, () => {
