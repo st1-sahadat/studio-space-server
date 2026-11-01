@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors"
 import "dotenv/config"
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 
 
@@ -31,21 +31,45 @@ app.get("/", (req, res) =>{
 
 
 // Studio Data
-app.post('/add-studio', async (req, res) => {
+app.post('/studio', async (req, res) => {
     const data = req.body; 
     const result = await studioCollection.insertOne(data);
     console.log(result);
     res.send(result);
 })
-app.get('/add-studio', async (req, res) => {
+app.get('/studio', async (req, res) => {
     const result = await studioCollection.find().toArray();
+    res.send(result)
+})
+app.get('/studio-top-6', async( req, res)=>{
+  const result = await studioCollection.find().sort({ rating: -1 }).limit(6).toArray()
+    res.send(result)
+})
+app.get('/CTG-Photo-studio', async( req, res)=>{
+  const result = await studioCollection.find({ category: "Photo Studio" }).toArray()
+    res.send(result)
+})
+app.get('/CTG-Sound-Stage', async( req, res)=>{
+  const result = await studioCollection.find({ category: "Sound Stage" }).toArray()
+    res.send(result)
+})
+app.get('/CTG-Podcast-Room', async( req, res)=>{
+  const result = await studioCollection.find({ category: "Podcast Room" }).toArray()
+    res.send(result)
+})
+app.get('/CTG-Music-Suite', async( req, res)=>{
+  const result = await studioCollection.find({ category: "Music Suite" }).toArray()
+    res.send(result)
+})
+app.get('/CTG-Art-Workshop', async( req, res)=>{
+  const result = await studioCollection.find({ category: "Art Workshop" }).toArray()
     res.send(result)
 })
 
 
 
 
-app.get('/add-studio/:id', async (req, res) => {
+app.get('/studio/:id', async (req, res) => {
     const { id } = req.params;
     const result = await studioCollection.findOne({ _id: new ObjectId(id) })
     res.send(result)
