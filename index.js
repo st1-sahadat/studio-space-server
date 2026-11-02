@@ -24,6 +24,7 @@ export async function connectToMongoDB() {
 const mongoClient = await connectToMongoDB();
 const db = mongoClient.db("studio-space")
 const studioCollection = db.collection("studio")
+const bookingCollection = db.collection("booking")
 
 app.get("/", (req, res) =>{
     res.send("Server Home Page!")
@@ -45,6 +46,7 @@ app.get('/studio-top-6', async( req, res)=>{
   const result = await studioCollection.find().sort({ rating: -1 }).limit(6).toArray()
     res.send(result)
 })
+// category api
 app.get('/CTG-Photo-studio', async( req, res)=>{
   const result = await studioCollection.find({ category: "Photo Studio" }).toArray()
     res.send(result)
@@ -65,13 +67,16 @@ app.get('/CTG-Art-Workshop', async( req, res)=>{
   const result = await studioCollection.find({ category: "Art Workshop" }).toArray()
     res.send(result)
 })
-
-
-
-
+// Studio ID API
 app.get('/studio/:id', async (req, res) => {
     const { id } = req.params;
     const result = await studioCollection.findOne({ _id: new ObjectId(id) })
+    res.send(result)
+})
+//User Booking Data
+app.post('/booking', async (req, res) => {
+    const { _id, ...data } = req.body;   
+    const result = await bookingCollection.insertOne(data)
     res.send(result)
 })
 
