@@ -42,6 +42,12 @@ app.get('/studio', async (req, res) => {
     const result = await studioCollection.find().toArray();
     res.send(result)
 })
+//User Add Studio Api
+app.get('/studio/:email', async (req, res) => {
+    const { email } = req.params
+    const result = await studioCollection.find({ email: email }).toArray();
+    res.send(result)
+})
 app.get('/studio-top-6', async( req, res)=>{
   const result = await studioCollection.find().sort({ rating: -1 }).limit(6).toArray()
     res.send(result)
@@ -73,13 +79,23 @@ app.get('/studio/:id', async (req, res) => {
     const result = await studioCollection.findOne({ _id: new ObjectId(id) })
     res.send(result)
 })
-//User Booking Data
+//User Booking Data add
 app.post('/booking', async (req, res) => {
     const { _id, ...data } = req.body;   
     const result = await bookingCollection.insertOne(data)
     res.send(result)
 })
-
+//User Booking Api
+app.get('/my-bookings/:email', async (req, res) => {
+    const { email } = req.params
+    const result = await bookingCollection.find({ email: email }).toArray();
+    res.send(result)
+})
+app.get('/my-bookings/:email/:id', async (req, res) => {
+    const { email, id } = req.params;
+    const result = await bookingCollection.findOne({ email: email, _id: new ObjectId(id) })
+    res.send(result)
+})
 
 app.listen(PORT, () => {
     console.log(`Server is runnign on port ${PORT}`);    
