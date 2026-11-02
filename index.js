@@ -42,11 +42,16 @@ app.get('/studio', async (req, res) => {
     const result = await studioCollection.find().toArray();
     res.send(result)
 })
-//User Add Studio Api
-app.get('/studio/:email', async (req, res) => {
-    const { email } = req.params
-    const result = await studioCollection.find({ email: email }).toArray();
-    res.send(result)
+
+// Studio ID API
+app.get('/studio/:id', async (req, res) => {
+    const { id } = req.params;
+  if (ObjectId.isValid(id)) {
+    const result = await studioCollection.findOne({ _id: new ObjectId(id) });
+    return res.send(result);
+  }
+  const result = await studioCollection.find({ email: id }).toArray();
+  res.send(result);
 })
 app.get('/studio-top-6', async( req, res)=>{
   const result = await studioCollection.find().sort({ rating: -1 }).limit(6).toArray()
@@ -71,12 +76,6 @@ app.get('/CTG-Music-Suite', async( req, res)=>{
 })
 app.get('/CTG-Art-Workshop', async( req, res)=>{
   const result = await studioCollection.find({ category: "Art Workshop" }).toArray()
-    res.send(result)
-})
-// Studio ID API
-app.get('/studio/:id', async (req, res) => {
-    const { id } = req.params;
-    const result = await studioCollection.findOne({ _id: new ObjectId(id) })
     res.send(result)
 })
 //User Booking Data add
