@@ -43,7 +43,7 @@ app.get('/studio', async (req, res) => {
     res.send(result)
 })
 
-// Studio ID API
+// Studio ID API and Email API
 app.get('/studio/:id', async (req, res) => {
     const { id } = req.params;
   if (ObjectId.isValid(id)) {
@@ -53,6 +53,13 @@ app.get('/studio/:id', async (req, res) => {
   const result = await studioCollection.find({ email: id }).toArray();
   res.send(result);
 })
+app.get('/my-listing/:email/:id', async (req, res) => {
+    const { email, id } = req.params;
+    const result = await studioCollection.findOne({ email: email, _id: new ObjectId(id) })
+    res.send(result)
+})
+
+
 app.get('/studio-top-6', async( req, res)=>{
   const result = await studioCollection.find().sort({ rating: -1 }).limit(6).toArray()
     res.send(result)
