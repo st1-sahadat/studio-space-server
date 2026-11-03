@@ -106,3 +106,6 @@ app.get('/my-bookings/:email/:id', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is runnign on port ${PORT}`);    
 })
+
+
+export default app;
