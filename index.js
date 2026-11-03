@@ -25,6 +25,7 @@ const mongoClient = await connectToMongoDB();
 const db = mongoClient.db("studio-space")
 const studioCollection = db.collection("studio")
 const bookingCollection = db.collection("booking")
+const wishlistCollection = db.collection("wishlist")
 
 app.get("/", (req, res) =>{
     res.send("Server Home Page!")
@@ -102,6 +103,27 @@ app.get('/my-bookings/:email/:id', async (req, res) => {
     const result = await bookingCollection.findOne({ email: email, _id: new ObjectId(id) })
     res.send(result)
 })
+
+//User Wishlist Data add
+app.post('/wishlist', async (req, res) => {
+    const { _id, ...data } = req.body;   
+    const result = await wishlistCollection.insertOne(data)
+    res.send(result)
+})
+//User Wishlist Api
+app.get('/my-wishlist/:email', async (req, res) => {
+    const { email } = req.params
+    const result = await wishlistCollection.find({ email: email }).toArray();
+    res.send(result)
+})
+app.get('/my-wishlist/:email/:id', async (req, res) => {
+    const { email, id } = req.params;
+    const result = await wishlistCollection.findOne({ email: email, _id: new ObjectId(id) })
+    res.send(result)
+})
+
+
+
 
 app.listen(PORT, () => {
     console.log(`Server is runnign on port ${PORT}`);    
