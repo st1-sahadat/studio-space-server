@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors"
 import "dotenv/config"
 import { MongoClient, ObjectId } from 'mongodb';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 
 
@@ -27,13 +28,38 @@ const studioCollection = db.collection("studio")
 const bookingCollection = db.collection("booking")
 const wishlistCollection = db.collection("wishlist")
 
+// User verify cheaker
+const verifyToken = async(req, res, next) => {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send({ msg: 'Unauthorized!' })
+    }
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+        return res.status(401).send({ msg: 'Unauthorized!' })
+    }
+    console.log(token);
+    const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
+    try{
+    const {payload} = await jwtVerify(token, JWKS);
+    console.log(payload);
+    next();
+    }catch(error){
+        console.error("Token verification failed:", error);
+        return res.status(401).send({ msg: "Unauthorized!" })
+    }
+}
+ 
+
+
+
 app.get("/", (req, res) =>{
     res.send("Server Home Page!")
 })
 
 
 // Studio Data
-app.post('/studio', async (req, res) => {
+app.post('/studio',  verifyToken, async (req, res) => {
     const data = req.body; 
     const result = await studioCollection.insertOne(data);
     console.log(result);
@@ -45,7 +71,7 @@ app.get('/studio', async (req, res) => {
 })
 
 // Studio ID API and Email API
-app.get('/studio/:id', async (req, res) => {
+app.get('/studio/:id',  async (req, res) => {
     const { id } = req.params;
   if (ObjectId.isValid(id)) {
     const result = await studioCollection.findOne({ _id: new ObjectId(id) });
@@ -87,7 +113,7 @@ app.get('/CTG-Art-Workshop', async( req, res)=>{
     res.send(result)
 })
 //User Booking Data add
-app.post('/booking', async (req, res) => {
+app.post('/booking', verifyToken, async (req, res) => {
     const { _id, ...data } = req.body;   
     const result = await bookingCollection.insertOne(data)
     res.send(result)
@@ -123,6 +149,35 @@ app.get('/my-wishlist/:email/:id', async (req, res) => {
 })
 
 
+//Delete booking
+app.delete('/studio/:id',  verifyToken, async (req, res) => {
+    const { id } = req.params
+    // bookings created earlier may have a string _id, newer ones a real ObjectId — try both
+    const filter = ObjectId.isValid(id)
+        ? { $or: [{ _id: new ObjectId(id) }, { _id: id }] }
+        : { _id: id };
+    const result = await studioCollection.deleteOne(filter)
+    res.send(result)
+})
+app.delete('/booking/:id',  async (req, res) => {
+    const { id } = req.params
+    // bookings created earlier may have a string _id, newer ones a real ObjectId — try both
+    const filter = ObjectId.isValid(id)
+        ? { $or: [{ _id: new ObjectId(id) }, { _id: id }] }
+        : { _id: id };
+    const result = await bookingCollection.deleteOne(filter)
+    res.send(result)
+})
+//Update studio
+app.patch('/studio/:id', async (req, res) => {
+    const { id } = req.params;
+    const updatData = req.body;
+    const result = await studioCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatData }
+    )
+    res.json(result)
+})
 
 
 app.listen(PORT, () => {
